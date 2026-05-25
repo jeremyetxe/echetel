@@ -1,0 +1,99 @@
+# Echetel robot configuration
+# All lengths in metres, angles in radians, masses in kg.
+
+robot:
+  name: echetel-v1
+  body_mass: 2.4          # kg, body + electronics (not payload)
+  body_radius: 0.12       # m, distance from centre to hip pivot
+
+legs:
+  count: 3
+  # Angular offset of each leg from the robot's forward axis (+x), in degrees.
+  # 0° = forward, positive = counterclockwise viewed from above.
+  offsets_deg: [90.0, 210.0, 330.0]
+  segments:
+    coxa_length: 0.055    # hip-to-knee link
+    femur_length: 0.110   # knee-to-ankle link
+    tibia_length: 0.130   # ankle-to-toe link
+  joint_limits:
+    hip_yaw:   [-45.0, 45.0]    # degrees
+    hip_pitch: [-30.0, 70.0]
+    knee_pitch: [10.0, 150.0]
+
+servos:
+  interface: serial          # "serial" or "can"
+  port: /dev/ttyUSB0
+  baudrate: 1000000
+  # Servo IDs: legs 0/1/2, joints 0=hip_yaw 1=hip_pitch 2=knee_pitch
+  ids:
+    - [1, 2, 3]   # leg 0
+    - [4, 5, 6]   # leg 1
+    - [7, 8, 9]   # leg 2
+  torque_limit: 0.85         # fraction of rated torque (0–1)
+  position_kp: 32
+  position_kd: 4
+
+imu:
+  interface: spi
+  device: /dev/spidev0.0
+  orientation_offset: [0.0, 0.0, 0.0]   # roll, pitch, yaw trim (deg)
+
+depth_camera:
+  serial: ""                 # leave blank to use first connected device
+  width: 640
+  height: 480
+  fps: 30
+  min_depth_m: 0.15
+  max_depth_m: 2.0
+
+load_cell:
+  interface: i2c
+  bus: 1
+  address: 0x48
+  full_scale_kg: 10.0
+  tare_on_startup: true
+
+gait:
+  flat:
+    step_height: 0.035       # m, foot lift during swing
+    step_length: 0.080       # m, stride length
+    duty_factor: 0.667       # fraction of cycle each foot is on ground
+    cycle_period: 0.9        # seconds
+  stair:
+    ascent:
+      step_height_multiplier: 1.8   # relative to flat step_height
+      forward_reach: 0.090          # m, horizontal reach onto next step
+      body_tilt_deg: 8.0            # nose-down tilt during ascent
+      speed_factor: 0.50            # relative to flat walking speed
+    descent:
+      step_height_multiplier: 1.5
+      forward_reach: 0.085
+      body_tilt_deg: -6.0           # nose-up tilt during descent
+      speed_factor: 0.45
+
+balance:
+  kp_roll: 12.0
+  kd_roll: 1.8
+  kp_pitch: 14.0
+  kd_pitch: 2.0
+  max_correction_deg: 8.0
+
+stair_detection:
+  edge_threshold_m: 0.05    # minimum height change to classify as a step edge
+  max_rise_m: 0.220
+  min_tread_m: 0.220
+  scan_region:              # fraction of image [top, bottom, left, right]
+    top: 0.30
+    bottom: 0.75
+    left: 0.15
+    right: 0.85
+
+payload:
+  basket_lock_servo_id: 10
+  tilt_servo_id: 11
+  max_tilt_deg: 15.0        # maximum basket tilt to compensate body angle
+
+safety:
+  max_body_tilt_deg: 25.0   # emergency stop if exceeded
+  min_battery_voltage: 19.5
+  estop_gpio_pin: 17        # BCM pin; pull low to stop

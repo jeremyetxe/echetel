@@ -1,0 +1,8 @@
+numpy>=1.26
+scipy>=1.12
+pyserial>=3.5
+python-can>=4.3
+smbus2>=0.4
+PyYAML>=6.0
+pyrealsense2>=2.55; platform_machine == "aarch64" or platform_machine == "x86_64"
+pytest>=8.0
